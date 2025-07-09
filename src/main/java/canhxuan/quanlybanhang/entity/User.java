@@ -13,17 +13,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String name;
-
-    @Column(unique = true, nullable = false)
-    private String email;
-
+    private String username;
     private String password;
-
-    private String phone;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private String role;
 }

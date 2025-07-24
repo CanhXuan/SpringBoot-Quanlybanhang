@@ -5,6 +5,9 @@ import canhxuan.quanlybanhang.repository.CategoryRepository;
 import canhxuan.quanlybanhang.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,20 +21,25 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findAll();
     }
 
+    @Cacheable(value = "categories", key = "#id")
     public Category getById(int id) {
+        System.out.println("Get category by id: " + id);
         return categoryRepository.findById(id).orElse(null);
     }
 
-    public void create(Category category) {
-        categoryRepository.save(category);
+    @CachePut(value = "categories", key = "#result.id")
+    public Category create(Category category) {
+        return categoryRepository.save(category);
     }
 
-    public void update(int id, Category category) {
+    @CachePut(value = "categories", key = "#result.id")
+    public Category update(int id, Category category) {
         categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not found"));
         category.setId(id);
-        categoryRepository.save(category);
+        return categoryRepository.save(category);
     }
 
+    @CacheEvict(value = "categories", key = "#id")
     public void delete(int id) {
         categoryRepository.deleteById(id);
     }

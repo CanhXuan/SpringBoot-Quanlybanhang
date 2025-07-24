@@ -13,9 +13,9 @@ public interface CategoryService {
 
     public Category getById(int id);
 
-    public void create(Category category);
+    public Category create(Category category);
 
-    public void update(int id, Category category);
+    public Category update(int id, Category category);
 
     public void delete(int id);
 }

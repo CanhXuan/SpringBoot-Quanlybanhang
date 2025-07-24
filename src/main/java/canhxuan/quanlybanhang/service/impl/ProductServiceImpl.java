@@ -4,6 +4,8 @@ import canhxuan.quanlybanhang.entity.Product;
 import canhxuan.quanlybanhang.repository.ProductRepository;
 import canhxuan.quanlybanhang.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,18 +19,22 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll();
     }
 
+    @Cacheable(value = "products", key = "#id")
     public Product getById(int id) {
         return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    public void create(Product product) {
-        productRepository.save(product);
+    @CachePut(value = "products", key = "#result.id")
+    public Product create(Product product) {
+
+        return productRepository.save(product);
     }
 
-    public void update(int id, Product product) {
+    @CachePut(value = "products", key = "#result.id")
+    public Product update(int id, Product product) {
         productRepository.findById(id).orElseThrow(()-> new RuntimeException("Product not found"));
         product.setId(id);
-        productRepository.save(product);
+        return productRepository.save(product);
     }
 
     public void delete(int id) {

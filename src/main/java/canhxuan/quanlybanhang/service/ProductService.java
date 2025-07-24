@@ -1,6 +1,7 @@
 package canhxuan.quanlybanhang.service;
 
 import canhxuan.quanlybanhang.entity.Product;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
@@ -9,9 +10,9 @@ public interface ProductService {
 
     public Product getById(int id);
 
-    public void create(Product product);
+    public Product create(Product product);
 
-    public void update(int id, Product product);
+    public Product update(int id, Product product);
 
     public void delete(int id);
 }

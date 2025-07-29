@@ -8,6 +8,7 @@ import org.springframework.boot.context.config.ConfigDataResourceNotFoundExcepti
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,9 +25,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Cacheable(value = "categories", key = "#id")
     public Category getById(int id) {
         System.out.println("Get category by id: " + id);
-        return categoryRepository.findById(id).orElse(null);
+        return categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
     }
-
     @CachePut(value = "categories", key = "#result.id")
     public Category create(Category category) {
         return categoryRepository.save(category);

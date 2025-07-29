@@ -1,5 +1,6 @@
 package canhxuan.quanlybanhang.controller;
 
+import canhxuan.quanlybanhang.dto.ApiResponse;
 import canhxuan.quanlybanhang.entity.Product;
 import canhxuan.quanlybanhang.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,12 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getById(@PathVariable int id) {
-        return new ResponseEntity<>(productService.getById(id), HttpStatus.OK);
+    public ApiResponse<Product> getById(@PathVariable int id) {
+        ApiResponse<Product> response = new ApiResponse<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setResult(productService.getById(id));
+        return response;
     }
 
     @PostMapping("/create")

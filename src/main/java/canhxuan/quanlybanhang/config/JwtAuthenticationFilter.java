@@ -1,5 +1,7 @@
 package canhxuan.quanlybanhang.config;
 
+import canhxuan.quanlybanhang.entity.Token;
+import canhxuan.quanlybanhang.repository.TokenRepository;
 import canhxuan.quanlybanhang.security.CustomUserDetailsService;
 import canhxuan.quanlybanhang.security.JwtUtils;
 import jakarta.servlet.FilterChain;
@@ -24,6 +26,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private CustomUserDetailsService customUserDetailsService;
     @Autowired
     private UserDetailsService userDetailsService;
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -33,11 +37,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             if (jwtUtils.validateJwtToken(token)) {
-                String username = jwtUtils.getUsernameFromJwtToken(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                Token storedToken = tokenRepository.findByToken(token).orElseThrow();
+                if(storedToken != null && !storedToken.isExpired() && !storedToken.isRevoked()) {
+                    String username = jwtUtils.getUsernameFromJwtToken(token);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         }
         filterChain.doFilter(request, response);

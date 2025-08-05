@@ -2,10 +2,12 @@ package canhxuan.quanlybanhang.controller;
 
 import canhxuan.quanlybanhang.entity.Category;
 import canhxuan.quanlybanhang.service.CategoryService;
+import org.casbin.jcasbin.main.Enforcer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,17 +18,31 @@ import java.util.List;
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private Enforcer enforcer;
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAll() {
-        List<Category> categories = categoryService.getAll();
-        return new ResponseEntity<>(categories, HttpStatus.OK);
+    public ResponseEntity<?> getAll(Authentication authentication) {
+        String username = authentication.getName();
+        String path = "/categories";
+        String method = "GET";
+        if(enforcer.enforce(username, path, method)) {
+            return ResponseEntity.ok(categoryService.getAll());
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getById(@PathVariable Integer id) {
-        Category category = categoryService.getById(id);
-        return new ResponseEntity<>(category, HttpStatus.OK);
+    public ResponseEntity<?> getById(@PathVariable Integer id, Authentication authentication) {
+        String username = authentication.getName();
+        String path = "/categories/" + id;
+        String method = "GET";
+        if(enforcer.enforce(username, path, method)) {
+            return ResponseEntity.ok(categoryService.getById(id));
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
     }
 
     @PostMapping("/create")

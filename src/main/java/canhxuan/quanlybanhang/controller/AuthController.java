@@ -54,7 +54,7 @@ public class AuthController {
             data.setJwtToken(jwtToken);
             data.setRefreshToken(refreshToken);
             data.setTokenType("Bearer");
-            data.setExpiresIn(900000);
+            data.setExpiresIn(JwtUtils.jwtExpiration);
             data.setUsername(request.getUsername());
             response.setStatus("200");
             response.setMessage("Login Success");

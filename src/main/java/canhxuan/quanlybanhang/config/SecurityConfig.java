@@ -1,11 +1,10 @@
 package canhxuan.quanlybanhang.config;
 
-import canhxuan.quanlybanhang.entity.Token;
 import canhxuan.quanlybanhang.entity.User;
-import canhxuan.quanlybanhang.repository.TokenRepository;
 import canhxuan.quanlybanhang.repository.UserRepository;
 import canhxuan.quanlybanhang.security.CustomOAuth2UserService;
 import canhxuan.quanlybanhang.security.JwtUtils;
+import canhxuan.quanlybanhang.service.email.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,9 +31,9 @@ public class SecurityConfig {
     @Autowired
     private JwtUtils jwtUtils;
     @Autowired
-    private TokenRepository tokenRepository;
-    @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private TokenService tokenService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -56,8 +55,8 @@ public class SecurityConfig {
                             User user = userRepository.findByUsername(username).orElseThrow();
                             String jwtToken = jwtUtils.generateJwtToken(authentication);
                             String refreshToken = jwtUtils.generateRefreshToken(authentication);
-                            tokenRepository.save(new Token(jwtToken, false, false, user));
-                            tokenRepository.save(new Token(refreshToken, false, false, user));
+                            tokenService.saveAccessToken(jwtToken, user.getUsername(), 5);
+                            tokenService.saveRefreshToken(refreshToken, user.getUsername(), 60*24*7);
                             response.setContentType("application/json");
                             System.out.println("JwtToken: " + jwtToken);
                             System.out.println("refreshToken: " + refreshToken);

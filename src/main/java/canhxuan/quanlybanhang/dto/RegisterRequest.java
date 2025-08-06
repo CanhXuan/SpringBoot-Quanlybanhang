@@ -8,5 +8,5 @@ public class RegisterRequest {
     private String password;
     private String email;
     private String avatarUrl;
-    private String role;
+    private String role = "USER";
 }

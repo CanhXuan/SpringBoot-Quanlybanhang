@@ -14,7 +14,7 @@ import java.util.Date;
 @Component
 public class JwtUtils {
     private String jwtSecret = "this-is-a-very-secure-secret-key!!";
-    public static final int jwtExpiration = 300000;
+    public static final int jwtExpiration = 30000000;
     private long refreshExpire = 1000 * 60 * 60 * 24 * 7;
 
     private Key getSigningKey() {
@@ -47,6 +47,15 @@ public class JwtUtils {
 
     public String generateJwtTokenByRefreshToken(String refreshToken) {
         String username = getUsernameFromJwtToken(refreshToken);
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateVerifyEmailToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())

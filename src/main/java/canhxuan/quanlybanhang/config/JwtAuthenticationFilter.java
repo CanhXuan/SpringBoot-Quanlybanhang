@@ -1,9 +1,8 @@
 package canhxuan.quanlybanhang.config;
 
-import canhxuan.quanlybanhang.entity.Token;
-import canhxuan.quanlybanhang.repository.TokenRepository;
 import canhxuan.quanlybanhang.security.CustomUserDetailsService;
 import canhxuan.quanlybanhang.security.JwtUtils;
+import canhxuan.quanlybanhang.service.email.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
     @Autowired
-    private TokenRepository tokenRepository;
+    private TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -37,14 +36,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             if (jwtUtils.validateJwtToken(token)) {
-                Token storedToken = tokenRepository.findByToken(token).orElseThrow();
-                if(storedToken != null && !storedToken.isExpired() && !storedToken.isRevoked()) {
+                if (tokenService.isTokenBlacklisted(token)) {
+                    throw new RuntimeException("Token is revoked");
+                }
                     String username = jwtUtils.getUsernameFromJwtToken(token);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
             }
         }
         filterChain.doFilter(request, response);

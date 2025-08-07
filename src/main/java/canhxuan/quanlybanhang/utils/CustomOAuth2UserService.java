@@ -1,4 +1,4 @@
-package canhxuan.quanlybanhang.security;
+package canhxuan.quanlybanhang.utils;
 
 import canhxuan.quanlybanhang.entity.User;
 import canhxuan.quanlybanhang.repository.UserRepository;

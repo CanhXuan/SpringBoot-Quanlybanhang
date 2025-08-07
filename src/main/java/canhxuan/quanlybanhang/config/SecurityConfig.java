@@ -2,9 +2,11 @@ package canhxuan.quanlybanhang.config;
 
 import canhxuan.quanlybanhang.entity.User;
 import canhxuan.quanlybanhang.repository.UserRepository;
-import canhxuan.quanlybanhang.security.CustomOAuth2UserService;
-import canhxuan.quanlybanhang.security.JwtUtils;
 import canhxuan.quanlybanhang.service.email.TokenService;
+import canhxuan.quanlybanhang.utils.CustomAuthenticationEntryPoint;
+import canhxuan.quanlybanhang.utils.CustomOAuth2UserService;
+import canhxuan.quanlybanhang.security.JwtAuthenticationFilter;
+import canhxuan.quanlybanhang.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +36,8 @@ public class SecurityConfig {
     private UserRepository userRepository;
     @Autowired
     private TokenService tokenService;
+    @Autowired
+    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -44,7 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/quanlybanhang/products/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/quanlybanhang/products/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
-                        )
+                )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfor -> userInfor
                                 .userService(customOAuth2UserService)
@@ -56,13 +60,16 @@ public class SecurityConfig {
                             String jwtToken = jwtUtils.generateJwtToken(authentication);
                             String refreshToken = jwtUtils.generateRefreshToken(authentication);
                             tokenService.saveAccessToken(jwtToken, user.getUsername(), 5);
-                            tokenService.saveRefreshToken(refreshToken, user.getUsername(), 60*24*7);
+                            tokenService.saveRefreshToken(refreshToken, user.getUsername(), 60 * 24 * 7);
                             response.setContentType("application/json");
                             System.out.println("JwtToken: " + jwtToken);
                             System.out.println("refreshToken: " + refreshToken);
                             response.getWriter().write("{\"token\": \"" + jwtToken + "\"," +
                                     "\n{\"RefreshToken\": \"" + refreshToken + "\",");
                         })
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint) // 👈 xử lý lỗi xác thực ở đây
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

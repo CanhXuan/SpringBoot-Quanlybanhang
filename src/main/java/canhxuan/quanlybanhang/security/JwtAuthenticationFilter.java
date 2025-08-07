@@ -1,8 +1,7 @@
-package canhxuan.quanlybanhang.config;
+package canhxuan.quanlybanhang.security;
 
-import canhxuan.quanlybanhang.security.CustomUserDetailsService;
-import canhxuan.quanlybanhang.security.JwtUtils;
 import canhxuan.quanlybanhang.service.email.TokenService;
+import canhxuan.quanlybanhang.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,15 +21,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
     @Autowired
-    private CustomUserDetailsService customUserDetailsService;
-    @Autowired
     private UserDetailsService userDetailsService;
     @Autowired
     private TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -39,11 +36,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (tokenService.isTokenBlacklisted(token)) {
                     throw new RuntimeException("Token is revoked");
                 }
-                    String username = jwtUtils.getUsernameFromJwtToken(token);
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                String username = jwtUtils.getUsernameFromJwtToken(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
         filterChain.doFilter(request, response);

@@ -54,15 +54,6 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String generateVerifyEmailToken(String username) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);

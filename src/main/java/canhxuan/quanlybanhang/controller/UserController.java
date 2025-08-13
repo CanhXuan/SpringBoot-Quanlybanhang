@@ -18,30 +18,30 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<User>> getAll() {
         List<User> users = userService.getAll();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable int id) {
         User user = userService.getById(id);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/create")
-    public String create(@RequestBody User user) {
+    public ResponseEntity<String> create(@RequestBody User user) {
         userService.create(user);
-        return "Create user successfully";
+        return ResponseEntity.status(HttpStatus.CREATED).body("Create user successfully");
     }
 
     @PutMapping("/update/{id}")
-    public String update(@PathVariable int id, @RequestBody User user) {
+    public ResponseEntity<String> update(@PathVariable int id, @RequestBody User user) {
         userService.update(id, user);
-        return "Update user successfully";
+        return ResponseEntity.ok("Update user successfully");
     }
 
     @DeleteMapping("/delete/{id}")
-    public String delete(@PathVariable int id) {
+    public ResponseEntity<String> delete(@PathVariable int id) {
         userService.delete(id);
-        return "Delete user successfully";
+        return ResponseEntity.ok("Delete user successfully");
     }
 }

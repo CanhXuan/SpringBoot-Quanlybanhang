@@ -30,8 +30,9 @@ public class UserServiceImpl implements UserService {
         user.setId(id);
         userRepository.save(user);
     }
-    
+
     public void delete(int id) {
+        userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         userRepository.deleteById(id);
     }
 }

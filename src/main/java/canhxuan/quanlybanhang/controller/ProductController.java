@@ -19,7 +19,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<Product>> getAll() {
         List<Product> products = productService.getAll();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{id}")
@@ -32,20 +32,20 @@ public class ProductController {
     }
 
     @PostMapping("/create")
-    public String create(@RequestBody Product product) {
+    public ResponseEntity<String> create(@RequestBody Product product) {
         productService.create(product);
-        return "Create product successfully";
+        return ResponseEntity.status(HttpStatus.CREATED).body("Create product successfully");
     }
 
     @PutMapping("/update/{id}")
-    public String update(@PathVariable int id, @RequestBody Product product) {
+    public ResponseEntity<String> update(@PathVariable int id, @RequestBody Product product) {
         productService.update(id, product);
-        return "Update product successfully";
+        return ResponseEntity.status(HttpStatus.OK).body("Update product successfully");
     }
 
     @DeleteMapping("/delete/{id}")
-    public String delete(@PathVariable int id) {
+    public ResponseEntity<String> delete(@PathVariable int id) {
         productService.delete(id);
-        return "Delete product successfully";
+        return ResponseEntity.status(HttpStatus.OK).body("Delete product successfully");
     }
 }

@@ -2,10 +2,10 @@ package canhxuan.quanlybanhang.config;
 
 import canhxuan.quanlybanhang.entity.User;
 import canhxuan.quanlybanhang.repository.UserRepository;
+import canhxuan.quanlybanhang.security.JwtAuthenticationFilter;
 import canhxuan.quanlybanhang.service.email.TokenService;
 import canhxuan.quanlybanhang.utils.CustomAuthenticationEntryPoint;
 import canhxuan.quanlybanhang.utils.CustomOAuth2UserService;
-import canhxuan.quanlybanhang.security.JwtAuthenticationFilter;
 import canhxuan.quanlybanhang.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -69,7 +69,7 @@ public class SecurityConfig {
                         })
                 )
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(customAuthenticationEntryPoint) // 👈 xử lý lỗi xác thực ở đây
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

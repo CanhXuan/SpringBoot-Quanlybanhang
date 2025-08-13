@@ -1,14 +1,17 @@
 package canhxuan.quanlybanhang.service.impl;
 
+import canhxuan.quanlybanhang.dto.EmailRequest;
 import canhxuan.quanlybanhang.dto.LoginRequest;
 import canhxuan.quanlybanhang.dto.LoginResponse;
 import canhxuan.quanlybanhang.dto.RegisterRequest;
 import canhxuan.quanlybanhang.entity.User;
 import canhxuan.quanlybanhang.repository.UserRepository;
-import canhxuan.quanlybanhang.utils.JwtUtils;
 import canhxuan.quanlybanhang.service.AuthService;
+import canhxuan.quanlybanhang.service.email.EmailProducer;
 import canhxuan.quanlybanhang.service.email.EmailService;
 import canhxuan.quanlybanhang.service.email.TokenService;
+import canhxuan.quanlybanhang.utils.JwtUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,12 +26,20 @@ import java.util.UUID;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired private AuthenticationManager authenticationManager;
-    @Autowired private JwtUtils jwtUtils;
-    @Autowired private TokenService tokenService;
-    @Autowired private PasswordEncoder passwordEncoder;
-    @Autowired private UserRepository userRepository;
-    @Autowired private EmailService emailService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtUtils jwtUtils;
+    @Autowired
+    private TokenService tokenService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private EmailProducer emailProducer;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -37,8 +48,8 @@ public class AuthServiceImpl implements AuthService {
         try {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-            String jwtToken =jwtUtils.generateJwtToken(auth);
-            String refreshToken =jwtUtils.generateRefreshToken(auth);
+            String jwtToken = jwtUtils.generateJwtToken(auth);
+            String refreshToken = jwtUtils.generateRefreshToken(auth);
             data.setJwtToken(jwtToken);
             data.setRefreshToken(refreshToken);
             data.setTokenType("Bearer");
@@ -48,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
             response.setMessage("Login Success");
             response.setData(data);
             tokenService.saveAccessToken(jwtToken, request.getUsername(), 5);
-            tokenService.saveRefreshToken(refreshToken, request.getUsername(), 60*24*7);
+            tokenService.saveRefreshToken(refreshToken, request.getUsername(), 60 * 24 * 7);
             return response;
         } catch (Exception e) {
             return null;
@@ -66,12 +77,19 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setAvatarUrl(request.getAvatarUrl());
         user.setIsEmailVerified(false);
-        user.setRole(request.getRole());
+        user.setRole("ADMIN");
         userRepository.save(user);
         String token = UUID.randomUUID().toString();
         System.out.println(user.getUsername());
-        tokenService.saveToken(token, user.getUsername(), 60*24);
-        emailService.send(user.getEmail(), "Verify your email", "Click here to verify your email: http://localhost:8080/quanlybanhang/auth/verify-email?token=" + token);
+        EmailRequest emailRequest = new EmailRequest(user.getEmail(), "Verify your email", "Click here to verify your email: http://localhost:8080/quanlybanhang/auth/verify-email?token=" + token);
+        tokenService.saveToken(token, user.getUsername(), 60 * 24);
+//        emailService.send(user.getEmail(), );
+        try {
+            String emailJson = new ObjectMapper().writeValueAsString(emailRequest);
+            emailProducer.sendEmailEvent(emailJson);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "Register success, please check your email to verify your account";
     }
 

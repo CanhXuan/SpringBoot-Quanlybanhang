@@ -77,7 +77,6 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setAvatarUrl(request.getAvatarUrl());
         user.setIsEmailVerified(false);
-        user.setRole("ADMIN");
         userRepository.save(user);
         String token = UUID.randomUUID().toString();
         System.out.println(user.getUsername());

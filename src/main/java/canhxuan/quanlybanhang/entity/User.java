@@ -19,5 +19,5 @@ public class User {
     private String avatarUrl;
     private Boolean isEmailVerified;
     private String provider;
-    private String role;
+    private String role = "USER";
 }

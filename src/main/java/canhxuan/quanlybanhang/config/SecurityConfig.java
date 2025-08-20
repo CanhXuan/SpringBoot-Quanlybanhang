@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/quanlybanhang/auth/**", "/oauth2/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/quanlybanhang/products/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/quanlybanhang/products/**").hasRole("ADMIN")
+                        .requestMatchers("/quanlybanhang/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

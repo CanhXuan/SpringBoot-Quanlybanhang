@@ -8,9 +8,9 @@ import canhxuan.quanlybanhang.entity.User;
 import canhxuan.quanlybanhang.repository.UserRepository;
 import canhxuan.quanlybanhang.service.AuthService;
 import canhxuan.quanlybanhang.service.email.EmailProducer;
-import canhxuan.quanlybanhang.service.email.EmailService;
 import canhxuan.quanlybanhang.service.email.TokenService;
 import canhxuan.quanlybanhang.utils.JwtUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +36,6 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private EmailService emailService;
     @Autowired
     private EmailProducer emailProducer;
 
@@ -82,7 +80,6 @@ public class AuthServiceImpl implements AuthService {
         System.out.println(user.getUsername());
         EmailRequest emailRequest = new EmailRequest(user.getEmail(), "Verify your email", "Click here to verify your email: http://localhost:8080/quanlybanhang/auth/verify-email?token=" + token);
         tokenService.saveToken(token, user.getUsername(), 60 * 24);
-//        emailService.send(user.getEmail(), );
         try {
             String emailJson = new ObjectMapper().writeValueAsString(emailRequest);
             emailProducer.sendEmailEvent(emailJson);
@@ -109,8 +106,14 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(email);
         String token = UUID.randomUUID().toString();
         tokenService.saveToken(token, user.getUsername(), 60);
-        emailService.send(user.getEmail(), "Reset your password", "Click here to reset your password: http://localhost:8080/quanlybanhang/auth/reset-password?token=" + token);
-        return "Please check your email to reset your password";
+        EmailRequest emailRequest = new EmailRequest(user.getEmail(), "Reset your password", "Click here to reset your password: http://localhost:8080/quanlybanhang/auth/reset-password?token=" + token);
+        try {
+            String emailJson = new ObjectMapper().writeValueAsString(emailRequest);
+            emailProducer.sendEmailEvent(emailJson);
+            return "Please check your email to reset your password";
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -121,6 +124,7 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
         user.setPassword(passwordEncoder.encode(request.get("password")));
+        tokenService.blacklistToken(token, 60);
         userRepository.save(user);
         return "Reset Password success";
     }
